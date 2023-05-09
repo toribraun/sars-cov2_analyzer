@@ -57,6 +57,11 @@ def count_codons(sequence):
     return codons
 
 
+def most_common_amino_acids(sequence):
+    amino_acids = translate(transcribe(sequence)).replace('*', '')
+    return Counter(amino_acids).most_common(10)
+
+
 def main():
     argparser = argparse.ArgumentParser()
     proc_arg_group = argparser.add_mutually_exclusive_group()
@@ -83,4 +88,4 @@ def main():
 # if __name__ == '__main__':
 #     main()
 
-print(count_codons(parse_seq_fasta("covid_sequence.fasta")))
+print(most_common_amino_acids(parse_seq_fasta("covid_sequence.fasta")))
