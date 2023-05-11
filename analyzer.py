@@ -4,6 +4,8 @@ from Bio.SeqUtils import gc_fraction
 from collections import Counter
 import argparse
 import matplotlib.pyplot as plt
+from Bio.Blast import NCBIWWW
+from Bio import SearchIO
 
 
 def parse_seq_fasta(file_path):
@@ -62,6 +64,26 @@ def most_common_amino_acids(sequence):
     return Counter(amino_acids).most_common(10)
 
 
+def get_blast_info(file_name):
+# pdb|8G6R|A Chain A, nsp12 [Porcine epidemic diarrhea virus]
+    seq_protein = translate(transcribe(parse_seq_fasta(file_name)))
+    result_handle = NCBIWWW.qblast("blastp", "pdb", seq_protein)
+    records = SearchIO.read(result_handle, 'blast-xml')
+    polymerases = []
+    helicases = []
+    for record in records:
+        desc = record.description
+        if 'polymerase' in desc:
+            polymerases.append(record.id)
+        elif 'helicase' in desc or 'Helicase' in desc:
+            helicases.append(record.id)
+        else:
+            print(record.id, desc)
+
+    print('polymerases count', len(polymerases))
+    print('helicases count:', len(helicases))
+
+
 def main():
     argparser = argparse.ArgumentParser()
     proc_arg_group = argparser.add_mutually_exclusive_group()
@@ -88,4 +110,4 @@ def main():
 # if __name__ == '__main__':
 #     main()
 
-print(most_common_amino_acids(parse_seq_fasta("covid_sequence.fasta")))
+get_blast_info("covid_sequence.fasta")
